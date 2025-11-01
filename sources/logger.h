@@ -21,7 +21,7 @@ class Logger {
   template <typename... Args>
   static void trace(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->trace(buf, label, args...);
@@ -30,7 +30,7 @@ class Logger {
   template <typename... Args>
   static void debug(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->debug(buf, label, args...);
@@ -39,7 +39,7 @@ class Logger {
   template <typename... Args>
   static void info(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->info(buf, label, args...);
@@ -48,7 +48,7 @@ class Logger {
   template <typename... Args>
   static void warn(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->warn(buf, label, args...);
@@ -57,7 +57,7 @@ class Logger {
   template <typename... Args>
   static void error(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->error(buf, label, args...);
@@ -66,7 +66,7 @@ class Logger {
   template <typename... Args>
   static void critical(const char* label, const char* fmt, const Args&... args) {
     char buf[LOGGER_BUFFER_SIZE];
-    buf[0] = 0;
+    std::memset(buf, 0, LOGGER_BUFFER_SIZE);
     strcat(buf, "[{:12}] ");
     strcat(buf, fmt);
     Logger::_logger->critical(buf, label, args...);
@@ -87,7 +87,7 @@ template <typename... Args>
 std::string colored(const char* color, const char* fmt, const Args&... args) {
   if (Logger::isColorLogEnabled()) {
     char buf[20];
-    buf[0] = 0;
+    std::memset(buf, 0, 20);
     strcat(buf, "{}");
     strcat(buf, fmt);
     strcat(buf, "{}");
