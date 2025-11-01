@@ -58,7 +58,7 @@ std::vector<FrequencyRange> readIgnoredRanges(const nlohmann::json& json) {
 Config::Config(const nlohmann::json& json, const ArgConfig& argConfig)
     : m_json(json),
       m_argConfig(argConfig),
-      m_id(!argConfig.id.empty() ? argConfig.id : generateRandomHash()),
+      m_id(!argConfig.id.empty() ? argConfig.id : randomHex(8)),
       m_devices(SdrDeviceReader::readDevices(json)),
       m_isColorLogEnabled(readKey<bool>(json, {"output", "color_log_enabled"})),
       m_consoleLogLevel(parseLogLevel(readKey<std::string>(json, {"output", "console_log_level"}))),

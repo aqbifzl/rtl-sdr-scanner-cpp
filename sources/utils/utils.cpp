@@ -7,9 +7,8 @@
 #include <time.h>
 
 #include <algorithm>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <numeric>
+#include <random>
 
 std::chrono::milliseconds getTime() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()); }
 
@@ -21,11 +20,13 @@ std::string removeZerosFromBegging(const std::string& string) {
   return string.substr(i, string.length() - i);
 }
 
-std::string generateRandomHash() {
-  auto generator = boost::uuids::random_generator();
-  auto uuid = boost::uuids::to_string(generator());
-  std::ignore = std::remove(uuid.begin(), uuid.end(), '-');
-  return uuid;
+std::string randomHex(std::size_t hex_count) {
+  std::random_device rd;
+  std::uniform_int_distribution<int> dist(0, 15);
+  std::ostringstream oss;
+  oss << std::hex << std::nouppercase;
+  for (std::size_t i = 0; i < hex_count; ++i) oss << dist(rd);
+  return oss.str();
 }
 
 void average(const float* input, float* output, int size, int groupSize) {

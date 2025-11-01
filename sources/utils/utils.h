@@ -11,7 +11,7 @@ std::chrono::milliseconds getTime();
 
 std::string removeZerosFromBegging(const std::string& string);
 
-std::string generateRandomHash();
+std::string randomHex(std::size_t hex_count);
 
 void average(const float* input, float* output, int size, int groupSize);
 
