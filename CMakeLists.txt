@@ -55,7 +55,18 @@ target_link_libraries(auto_sdr
 )
 
 add_executable(auto_sdr_test ${TEST_SOURCES} "tests/test_main.cpp")
-target_link_libraries(auto_sdr_test auto_sdr_libs gtest)
+target_link_libraries(auto_sdr_test 
+    gtest
+    auto_sdr_libs
+    gnuradio::gnuradio-blocks
+    gnuradio::gnuradio-fft
+    gnuradio::gnuradio-filter
+    gnuradio::gnuradio-soapy
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PahoMqttCpp::paho-mqttpp3
+    CLI11::CLI11
+)
 
 install(TARGETS auto_sdr DESTINATION)
 install(TARGETS auto_sdr_test DESTINATION)
