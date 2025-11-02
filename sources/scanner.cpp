@@ -4,6 +4,7 @@
 #include <logger.h>
 
 constexpr auto LABEL = "scanner";
+constexpr auto LOOP_TIMEOUT = std::chrono::milliseconds(10);
 
 Scanner::Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount)
     : m_device(config, device, mqtt, m_notification, recordersCount),
@@ -34,13 +35,35 @@ Scanner::~Scanner() {
   m_thread.join();
 }
 
+void Scanner::runScheduler(const std::optional<FrequencyRange>& activeRange) {
+  auto recordings = m_scheduler.getRecordings(getTime());
+  if (recordings) {
+    m_device.updateRecordings({});
+    m_device.setFrequencyRange(recordings->first);
+    while (m_isRunning && recordings) {
+      m_device.updateRecordings(recordings->second);
+      recordings = m_scheduler.getRecordings(getTime());
+      std::this_thread::sleep_for(LOOP_TIMEOUT);
+    }
+    m_device.updateRecordings({});
+    if (activeRange) {
+      m_device.setFrequencyRange(*activeRange);
+    }
+  }
+}
+
 void Scanner::worker() {
   Logger::info(LABEL, "thread started");
   if (m_ranges.empty()) {
     Logger::warn(LABEL, "empty scanned ranges");
+    while (m_isRunning) {
+      runScheduler(std::nullopt);
+      std::this_thread::sleep_for(LOOP_TIMEOUT);
+    }
   } else if (m_ranges.size() == 1) {
     m_device.setFrequencyRange(m_ranges.front());
     while (m_isRunning) {
+      runScheduler(m_ranges.front());
       m_device.updateRecordings(m_notification.wait());
     }
   } else {
@@ -51,6 +74,7 @@ void Scanner::worker() {
         const auto startScanningTime = getTime();
         bool isRecording = true;
         while ((getTime() <= startScanningTime + RANGE_SCANNING_TIME || isRecording) && m_isRunning) {
+          runScheduler(range);
           const auto notification = m_notification.wait();
           isRecording = !notification.empty();
           m_device.updateRecordings(notification);

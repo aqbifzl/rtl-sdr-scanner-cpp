@@ -17,6 +17,7 @@ class Scanner {
   ~Scanner();
 
  private:
+  void runScheduler(const std::optional<FrequencyRange>& activeRange);
   void worker();
 
   SdrDevice m_device;
