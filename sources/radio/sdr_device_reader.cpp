@@ -95,6 +95,7 @@ void SdrDeviceReader::createSoapyDevices(nlohmann::json& json, const SoapySDR::K
   addSampleRate(144000000, 146000000, *sampleRates.rbegin());
 
   json["gains"] = getGains(sdr);
+  json["satellites"] = nlohmann::json::array();
 
   SoapySDR::Device::unmake(sdr);
 }
@@ -144,6 +145,14 @@ Device SdrDeviceReader::readDevice(const nlohmann::json& json) {
     const auto start = item.at("start").get<Frequency>();
     const auto stop = item.at("stop").get<Frequency>();
     device.m_ranges.emplace_back(start, stop);
+  }
+  for (const auto& item : json.at("satellites")) {
+    const auto id = item.at("id").get<int>();
+    const auto name = item.at("name").get<std::string>();
+    const auto frequency = item.at("frequency").get<Frequency>();
+    const auto bandwidth = item.at("bandwidth").get<Frequency>();
+    const auto modulation = item.at("modulation").get<std::string>();
+    device.m_satellites.emplace_back(id, name, frequency, bandwidth, modulation);
   }
   return device;
 }

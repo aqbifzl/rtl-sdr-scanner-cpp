@@ -2,7 +2,9 @@
 
 #include <config.h>
 #include <network/mqtt.h>
+#include <network/remote_controller.h>
 #include <notification.h>
+#include <radio/scheduler.h>
 #include <radio/sdr_device.h>
 
 #include <atomic>
@@ -11,13 +13,14 @@
 
 class Scanner {
  public:
-  Scanner(const Config& config, const Device& device, Mqtt& mqtt, const int recordersCount);
+  Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount);
   ~Scanner();
 
  private:
   void worker();
 
   SdrDevice m_device;
+  Scheduler m_scheduler;
   const std::vector<FrequencyRange> m_ranges;
 
   std::atomic<bool> m_isRunning;

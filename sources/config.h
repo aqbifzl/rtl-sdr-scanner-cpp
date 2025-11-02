@@ -49,6 +49,7 @@ class Config {
  public:
   static Config loadFromFile(const std::string& path, const ArgConfig& argConfig);
   static void saveToFile(const std::string& path, const nlohmann::json& json);
+  static nlohmann::json hideSensitiveData(const nlohmann::json& json);
   nlohmann::json json() const;
   std::string mqtt() const;
 
@@ -70,6 +71,11 @@ class Config {
   std::string mqttUsername() const;
   std::string mqttPassword() const;
 
+  std::string apiKey() const;
+  std::string latitude() const;
+  std::string longitude() const;
+  int altitude() const;
+
  private:
   Config(const nlohmann::json& json, const ArgConfig& argConfig);
 
@@ -89,4 +95,9 @@ class Config {
   const std::chrono::milliseconds m_recordingTimeout;
   const Frequency m_recordingTuningStep;
   const int m_workers;
+
+  const std::string m_apiKey;
+  const std::string m_latitude;
+  const std::string m_longitude;
+  const int m_altitude;
 };

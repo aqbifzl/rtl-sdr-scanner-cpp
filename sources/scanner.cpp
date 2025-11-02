@@ -5,8 +5,9 @@
 
 constexpr auto LABEL = "scanner";
 
-Scanner::Scanner(const Config& config, const Device& device, Mqtt& mqtt, const int recordersCount)
+Scanner::Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount)
     : m_device(config, device, mqtt, m_notification, recordersCount),
+      m_scheduler(config, device, remoteController),
       m_ranges(splitRanges(device.m_ranges, getRangeSplitSampleRate(device.m_sampleRate))),
       m_isRunning(true),
       m_thread([this]() { worker(); }) {

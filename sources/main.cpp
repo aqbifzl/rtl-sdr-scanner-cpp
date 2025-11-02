@@ -47,13 +47,13 @@ int main(int argc, char** argv) {
       bool reload = false;
       const Config config = Config::loadFromFile(argConfig.configFile, argConfig);
       Logger::configure(config.consoleLogLevel(), config.fileLogLevel(), argConfig.logFileName, argConfig.logFileSize, argConfig.logFileCount, config.isColorLogEnabled());
-      Logger::info(LABEL, "config: {}", colored(GREEN, "{}", config.json().dump()));
+      Logger::info(LABEL, "config: {}", colored(GREEN, "{}", Config::hideSensitiveData(config.json()).dump()));
       Logger::info(LABEL, "mqtt: {}", colored(GREEN, "{}", config.mqtt()));
 
       Mqtt mqtt(config);
       RemoteController remoteController(config, mqtt);
       remoteController.reloadConfigCallback([&reload, &argConfig, &remoteController](const nlohmann::json& json) {
-        Logger::info(LABEL, "reload config: {}", colored(GREEN, "{}", json.dump()));
+        Logger::info(LABEL, "reload config: {}", colored(GREEN, "{}", Config::hideSensitiveData(json).dump()));
         Config::saveToFile(argConfig.configFile, json);
         remoteController.reloadConfigStatus(true);
         reload = true;
@@ -63,10 +63,8 @@ int main(int argc, char** argv) {
         try {
           if (!device.m_enabled) {
             Logger::info(LABEL, "device disabled, skipping: {}", colored(GREEN, "{}", device.getName()));
-          } else if (device.m_ranges.empty()) {
-            Logger::info(LABEL, "empty ranges to scan, skipping: {}", colored(GREEN, "{}", device.getName()));
           } else {
-            scanners.push_back(std::make_unique<Scanner>(config, device, mqtt, config.recordersCount()));
+            scanners.push_back(std::make_unique<Scanner>(config, device, mqtt, remoteController, config.recordersCount()));
           }
         } catch (const std::exception& exception) {
           Logger::error(LABEL, "can not open device: {}, exception: {}", colored(RED, "{}", device.getName()), exception.what());

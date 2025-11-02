@@ -1,4 +1,5 @@
 {
+    "api_key": "",
     "devices": [],
     "ignored_frequencies": [],
     "output": {
@@ -6,12 +7,17 @@
         "console_log_level": "info",
         "file_log_level": "debug"
     },
+    "position": {
+        "altitude": 0,
+        "latitude": "0.000000",
+        "longitude": "0.000000"
+    },
     "recording": {
         "max_noise_time_ms": 2000,
         "min_sample_rate": 32000,
         "min_time_ms": 2000,
         "step": 2500
     },
-    "version": 1,
+    "version": 2,
     "workers": 0
 }

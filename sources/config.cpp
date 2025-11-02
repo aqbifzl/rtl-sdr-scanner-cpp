@@ -5,6 +5,8 @@
 #include <radio/sdr_device_reader.h>
 #include <utils/utils.h>
 
+#include <regex>
+
 constexpr auto LABEL = "config";
 
 spdlog::level::level_enum parseLogLevel(const std::string& level) {
@@ -68,7 +70,11 @@ Config::Config(const nlohmann::json& json, const ArgConfig& argConfig)
       m_recordingMinTime(std::chrono::milliseconds(readKey<int>(json, {"recording", "min_time_ms"}))),
       m_recordingTimeout(std::chrono::milliseconds(readKey<int>(json, {"recording", "max_noise_time_ms"}))),
       m_recordingTuningStep(readKey<Frequency>(json, {"recording", "step"})),
-      m_workers(readKey<int>(json, {"workers"})) {}
+      m_workers(readKey<int>(json, {"workers"})),
+      m_apiKey(readKey<std::string>(json, {"api_key"})),
+      m_latitude(readKey<std::string>(json, {"position", "latitude"})),
+      m_longitude(readKey<std::string>(json, {"position", "longitude"})),
+      m_altitude(readKey<int>(json, {"position", "altitude"})) {}
 
 Config Config::loadFromFile(const std::string& path, const ArgConfig& argConfig) {
   constexpr auto BUFFER_SIZE = 1024 * 1024;
@@ -107,6 +113,21 @@ void Config::saveToFile(const std::string& path, const nlohmann::json& json) {
   }
 }
 
+nlohmann::json Config::hideSensitiveData(const nlohmann::json& json) {
+  nlohmann::json config(json);
+  try {
+    if (!config["api_key"].empty()) {
+      config["api_key"] = "******";
+    }
+    std::regex regex(R"(^(\d+)\.\d+)");
+    config["position"]["latitude"] = std::regex_replace(config["position"]["latitude"].get<std::string>(), regex, "$1.********");
+    config["position"]["longitude"] = std::regex_replace(config["position"]["longitude"].get<std::string>(), regex, "$1.********");
+  } catch (const std::exception& exception) {
+    Logger::warn(LABEL, "hide sensitive data exception: {}", colored(RED, "{}", exception.what()));
+  }
+  return config;
+}
+
 nlohmann::json Config::json() const { return m_json; }
 std::string Config::mqtt() const { return fmt::format("{}@{}", m_argConfig.mqttUser, m_argConfig.mqttUrl); };
 
@@ -131,3 +152,8 @@ Frequency Config::recordingTuningStep() const { return m_recordingTuningStep; }
 std::string Config::mqttUrl() const { return m_argConfig.mqttUrl; }
 std::string Config::mqttUsername() const { return m_argConfig.mqttUser; }
 std::string Config::mqttPassword() const { return m_argConfig.mqttPassword; }
+
+std::string Config::apiKey() const { return m_apiKey; }
+std::string Config::latitude() const { return m_latitude; }
+std::string Config::longitude() const { return m_longitude; }
+int Config::altitude() const { return m_altitude; }
