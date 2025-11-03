@@ -44,7 +44,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Satellite, id, name, frequency, bandwidth, mo
 
 struct Gain {
   std::string name;
-  float value;
+  double value;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Gain, name, value)
 
@@ -58,7 +58,8 @@ struct Device {
   float start_recording_level{};
   float stop_recording_level{};
   std::vector<Satellite> satellites{};
+  std::vector<Frequency> sample_rates{};
 
   std::string getName() const { return driver + "_" + serial; }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Device, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates)

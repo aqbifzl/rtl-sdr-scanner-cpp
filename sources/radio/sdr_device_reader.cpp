@@ -4,22 +4,21 @@
 #include <logger.h>
 #include <utils/utils.h>
 
-#include <set>
-
 constexpr auto LABEL = "config";
 
-std::set<Frequency> getSampleRates(SoapySDR::Device* sdr) {
-  std::set<Frequency> sampleRates;
+std::vector<Frequency> getSampleRates(SoapySDR::Device* sdr) {
+  std::vector<Frequency> sampleRates;
   for (const auto value : sdr->listSampleRates(SOAPY_SDR_RX, 0)) {
     const auto sampleRate = static_cast<Frequency>(value);
     Logger::info(LABEL, "  supported sample rate: {}", formatFrequency(sampleRate));
-    sampleRates.insert(sampleRate);
+    sampleRates.emplace_back(sampleRate);
   }
+  std::sort(sampleRates.begin(), sampleRates.end());
   return sampleRates;
 }
 
-std::vector<nlohmann::json> getGains(SoapySDR::Device* sdr) {
-  std::vector<nlohmann::json> gains;
+std::vector<Gain> getGains(SoapySDR::Device* sdr) {
+  std::vector<Gain> gains;
   for (const auto& gain : sdr->listGains(SOAPY_SDR_RX, 0)) {
     const auto gainRange = sdr->getGainRange(SOAPY_SDR_RX, 0, gain);
     Logger::info(
@@ -29,12 +28,12 @@ std::vector<nlohmann::json> getGains(SoapySDR::Device* sdr) {
         colored(GREEN, "{}", gainRange.minimum()),
         colored(GREEN, "{}", gainRange.maximum()),
         colored(GREEN, "{}", gainRange.step()));
-    gains.push_back({{"name", gain}, {"value", gainRange.maximum()}});
+    gains.emplace_back(gain, gainRange.maximum());
   }
   return gains;
 }
 
-void SdrDeviceReader::updateSoapyDevice(nlohmann::json& json, const SoapySDR::Kwargs args) {
+void SdrDeviceReader::updateDevice(Device& device, const SoapySDR::Kwargs args) {
   const auto serial = args.at("serial");
   const auto driver = args.at("driver");
   Logger::info(LABEL, "update device, driver: {}, serial: {}", colored(GREEN, "{}", driver), colored(GREEN, "{}", serial));
@@ -44,19 +43,13 @@ void SdrDeviceReader::updateSoapyDevice(nlohmann::json& json, const SoapySDR::Kw
     throw std::runtime_error("open device failed");
   }
 
-  json["driver"] = driver;
-
-  const auto sampleRate = json.at("sample_rate").get<Frequency>();
-  const auto sampleRates = getSampleRates(sdr);
-  json["sample_rates"] = sampleRates;
-  if (sampleRates.count(sampleRate) == 0) {
-    json["sample_rate"] = getNearestElement(sampleRates, sampleRate);
-  }
+  device.driver = driver;
+  device.sample_rates = getSampleRates(sdr);
 
   SoapySDR::Device::unmake(sdr);
 }
 
-void SdrDeviceReader::createSoapyDevices(nlohmann::json& json, const SoapySDR::Kwargs args) {
+Device SdrDeviceReader::createDevice(const SoapySDR::Kwargs args) {
   const auto serial = args.at("serial");
   const auto driver = args.at("driver");
   Logger::info(LABEL, "creating device, driver: {}, serial: {}", colored(GREEN, "{}", driver), colored(GREEN, "{}", serial));
@@ -66,23 +59,20 @@ void SdrDeviceReader::createSoapyDevices(nlohmann::json& json, const SoapySDR::K
     throw std::runtime_error("open device failed");
   }
 
-  json["driver"] = driver;
-  json["serial"] = serial;
-  json["enabled"] = true;
-  json["start_recording_level"] = DEFAULT_RECORDING_START_LEVEL;
-  json["stop_recording_level"] = DEFAULT_RECORDING_STOP_LEVEL;
+  Device device;
+  device.driver = driver;
+  device.serial = serial;
+  device.enabled = true;
+  device.start_recording_level = DEFAULT_RECORDING_START_LEVEL;
+  device.stop_recording_level = DEFAULT_RECORDING_STOP_LEVEL;
+  device.sample_rates = getSampleRates(sdr);
+  device.gains = getGains(sdr);
 
-  const auto sampleRates = getSampleRates(sdr);
-  json["sample_rates"] = sampleRates;
-
-  json["ranges"] = nlohmann::json::array();
-  auto addSampleRate = [&sampleRates, &json](Frequency start, Frequency stop, Frequency sampleRate) {
-    if (json.at("ranges").empty() && sampleRates.count(sampleRate)) {
-      json["ranges"].push_back({{"start", start}, {"stop", stop}});
-      json["sample_rate"] = sampleRate;
-      return true;
-    } else {
-      return false;
+  auto addSampleRate = [&device](Frequency start, Frequency stop, Frequency sampleRate) {
+    const auto contains = std::find(device.sample_rates.begin(), device.sample_rates.end(), sampleRate) != device.sample_rates.end();
+    if (device.ranges.empty() && contains) {
+      device.ranges.emplace_back(start, stop);
+      device.sample_rate = sampleRate;
     }
   };
 
@@ -92,35 +82,26 @@ void SdrDeviceReader::createSoapyDevices(nlohmann::json& json, const SoapySDR::K
   addSampleRate(144000000, 146000000, 2000000);
   addSampleRate(144000000, 146000000, 1024000);
   addSampleRate(144000000, 146000000, 1000000);
-  addSampleRate(144000000, 146000000, *sampleRates.rbegin());
-
-  json["gains"] = getGains(sdr);
-  json["satellites"] = nlohmann::json::array();
+  addSampleRate(144000000, 146000000, *device.sample_rates.rbegin());
 
   SoapySDR::Device::unmake(sdr);
+  return device;
 }
 
-void SdrDeviceReader::scanSoapyDevices(nlohmann::json& json) {
+void SdrDeviceReader::updateDevices(std::vector<Device>& devices) {
   Logger::info(LABEL, "scanning connected devices");
   const SoapySDR::KwargsList results = SoapySDR::Device::enumerate("remote=");
   Logger::info(LABEL, "found {} devices:", colored(GREEN, "{}", results.size()));
 
-  for (auto& device : json.at("devices")) {
-    device["driver"] = "";
-    device["sample_rates"] = nlohmann::json::array();
-  }
   for (uint32_t i = 0; i < results.size(); ++i) {
     try {
-      auto& devices = json.at("devices");
       const auto serial = results[i].at("serial");
-      const auto f = [serial](nlohmann::json& device) { return device.at("serial").get<std::string>() == serial; };
+      const auto f = [serial](const Device& device) { return device.serial == serial; };
       const auto it = std::find_if(devices.begin(), devices.end(), f);
       if (it != devices.end()) {
-        updateSoapyDevice(*it, results[i]);
+        updateDevice(*it, results[i]);
       } else {
-        nlohmann::json device;
-        createSoapyDevices(device, results[i]);
-        devices.push_back(device);
+        devices.push_back(createDevice(results[i]));
       }
     } catch (const std::exception& exception) {
       Logger::warn(LABEL, "scan device exception: {}", exception.what());

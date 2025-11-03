@@ -8,10 +8,10 @@
 
 class SdrDeviceReader {
  private:
-  static void updateSoapyDevice(nlohmann::json& json, const SoapySDR::Kwargs args);
-  static void createSoapyDevices(nlohmann::json& json, const SoapySDR::Kwargs args);
+  static void updateDevice(Device& device, const SoapySDR::Kwargs args);
+  static Device createDevice(const SoapySDR::Kwargs args);
 
  public:
-  static void scanSoapyDevices(nlohmann::json& json);
+  static void updateDevices(std::vector<Device>& devices);
   static void clearDevices(nlohmann::json& json);
 };

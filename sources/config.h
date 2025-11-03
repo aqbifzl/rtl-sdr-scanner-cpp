@@ -78,10 +78,9 @@ class Config {
   int altitude() const;
 
  private:
-  Config(const nlohmann::json& json, const ArgConfig& argConfig);
+  Config(const ArgConfig& argConfig, const FileConfig& fileConfig);
 
   const std::string m_id;
-  const nlohmann::json m_json;
   const ArgConfig& m_argConfig;
   const FileConfig m_fileConfig;
 };

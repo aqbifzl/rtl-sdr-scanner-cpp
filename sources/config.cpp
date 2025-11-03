@@ -26,7 +26,7 @@ spdlog::level::level_enum parseLogLevel(const std::string& level) {
   return spdlog::level::level_enum::off;
 }
 
-Config::Config(const nlohmann::json& json, const ArgConfig& argConfig) : m_id(!argConfig.id.empty() ? argConfig.id : randomHex(8)), m_json(json), m_argConfig(argConfig), m_fileConfig(json) {}
+Config::Config(const ArgConfig& argConfig, const FileConfig& fileConfig) : m_id(!argConfig.id.empty() ? argConfig.id : randomHex(8)), m_argConfig(argConfig), m_fileConfig(fileConfig) {}
 
 Config Config::loadFromFile(const std::string& path, const ArgConfig& argConfig) {
   std::ifstream stream(path);
@@ -34,9 +34,9 @@ Config Config::loadFromFile(const std::string& path, const ArgConfig& argConfig)
     try {
       auto json = nlohmann::json::parse(stream);
       ConfigMigrator::update(json);
-      SdrDeviceReader::scanSoapyDevices(json);
-      ConfigMigrator::sort(json);
-      return Config(json, argConfig);
+      FileConfig fileConfig(json);
+      SdrDeviceReader::updateDevices(fileConfig.devices);
+      return Config(argConfig, fileConfig);
     } catch (const nlohmann::json::parse_error& exception) {
       throw std::runtime_error(fmt::format("can not parse config file, invalid json format: {}", path));
     }
@@ -50,6 +50,7 @@ void Config::saveToFile(const std::string& path, const nlohmann::json& json) {
   if (stream) {
     auto tmp = json;
     SdrDeviceReader::clearDevices(tmp);
+    ConfigMigrator::sort(tmp);
     stream << std::setw(4) << tmp << std::endl;
   } else {
     Logger::warn(LABEL, "save new config failed");
@@ -71,7 +72,7 @@ nlohmann::json Config::hideSensitiveData(const nlohmann::json& json) {
   return config;
 }
 
-nlohmann::json Config::json() const { return m_json; }
+nlohmann::json Config::json() const { return static_cast<nlohmann::json>(m_fileConfig); }
 std::string Config::mqtt() const { return fmt::format("{}@{}", m_argConfig.mqttUser, m_argConfig.mqttUrl); };
 
 std::string Config::getId() const { return m_id; }
