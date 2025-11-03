@@ -9,22 +9,22 @@ constexpr auto LOOP_TIMEOUT = std::chrono::milliseconds(10);
 Scanner::Scanner(const Config& config, const Device& device, Mqtt& mqtt, RemoteController& remoteController, const int recordersCount)
     : m_device(config, device, mqtt, m_notification, recordersCount),
       m_scheduler(config, device, remoteController),
-      m_ranges(splitRanges(device.m_ranges, getRangeSplitSampleRate(device.m_sampleRate))),
+      m_ranges(splitRanges(device.ranges, getRangeSplitSampleRate(device.sample_rate))),
       m_isRunning(true),
       m_thread([this]() { worker(); }) {
   Logger::info(LABEL, "starting");
   Logger::info(LABEL, "ignored ranges: {}", colored(GREEN, "{}", config.ignoredRanges().size()));
   for (const auto& range : config.ignoredRanges()) {
-    Logger::info(LABEL, "ignored range: {} - {}", formatFrequency(range.first), formatFrequency(range.second));
+    Logger::info(LABEL, "ignored range: {}", formatFrequencyRange(range));
   }
-  Logger::info(LABEL, "scan ranges: {}", colored(GREEN, "{}", device.m_ranges.size()));
-  for (const auto& range : device.m_ranges) {
-    Logger::info(LABEL, "scan range: {} - {}", formatFrequency(range.first), formatFrequency(range.second));
+  Logger::info(LABEL, "scan ranges: {}", colored(GREEN, "{}", device.ranges.size()));
+  for (const auto& range : device.ranges) {
+    Logger::info(LABEL, "scan range: {}", formatFrequencyRange(range));
   }
-  Logger::info(LABEL, "sample rate: {}, split sample rate: {}", formatFrequency(device.m_sampleRate), formatFrequency(getRangeSplitSampleRate(device.m_sampleRate)));
+  Logger::info(LABEL, "sample rate: {}, split sample rate: {}", formatFrequency(device.sample_rate), formatFrequency(getRangeSplitSampleRate(device.sample_rate)));
   Logger::info(LABEL, "splitted scan ranges: {}", colored(GREEN, "{}", m_ranges.size()));
   for (const auto& range : m_ranges) {
-    Logger::info(LABEL, "splitted scan range: {} - {}", formatFrequency(range.first), formatFrequency(range.second));
+    Logger::info(LABEL, "splitted scan range: {}", formatFrequencyRange(range));
   }
   Logger::info(LABEL, "started");
 }
@@ -44,8 +44,7 @@ void Scanner::runScheduler(const std::optional<FrequencyRange>& activeRange) {
     while (m_isRunning && recordings) {
       const auto range = recordings->first;
       if (range != lastRange) {
-        const auto center = (range.first + range.second) / 2;
-        Logger::info(LABEL, "update scheduled frequency, center: {}", formatFrequency(center));
+        Logger::info(LABEL, "update scheduled frequency, center: {}", formatFrequency(range.center()));
         m_device.setFrequencyRange(range);
         lastRange = range;
       }

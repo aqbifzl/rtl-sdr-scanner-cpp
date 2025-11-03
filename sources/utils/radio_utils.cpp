@@ -56,6 +56,8 @@ std::string formatFrequency(const Frequency frequency, const char* color) {
   }
 }
 
+std::string formatFrequencyRange(const FrequencyRange range, const char* color) { return fmt::format("{} - {}", formatFrequency(range.start, color), formatFrequency(range.stop, color)); }
+
 std::string formatPower(const float power, const char* color) {
   const char* reset = NC;
   if (!color) {
@@ -173,12 +175,11 @@ Frequency getRangeSplitSampleRate(Frequency sampleRate) {
 }
 
 std::vector<FrequencyRange> splitRange(const FrequencyRange& range, Frequency sampleRate) {
-  const auto bandwidth = range.second - range.first;
-  if (bandwidth <= sampleRate) {
+  if (range.bandwidth() <= sampleRate) {
     return {range};
   } else {
     std::vector<FrequencyRange> ranges;
-    for (Frequency f = range.first; f < range.second; f += sampleRate) {
+    for (Frequency f = range.start; f < range.stop; f += sampleRate) {
       ranges.emplace_back(f, f + sampleRate);
     }
     return ranges;

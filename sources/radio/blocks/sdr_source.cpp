@@ -10,14 +10,14 @@ constexpr auto LABEL = "source";
 
 SdrSource::SdrSource(const Device& device)
     : gr::sync_block("SdrSource", gr::io_signature::make(0, 0, 0), gr::io_signature::make(1, 1, sizeof(gr_complex))), m_configDevice(device), m_device(nullptr), m_stream(nullptr) {
-  m_device = SoapySDR::Device::make(fmt::format("driver={},serial={}", device.m_driver, device.m_serial));
+  m_device = SoapySDR::Device::make(fmt::format("driver={},serial={}", device.driver, device.serial));
   m_device->setGainMode(SOAPY_SDR_RX, 0, false);
-  for (const auto& [key, value] : device.m_gains) {
-    Logger::info(LABEL, "set gain, key: {}, value: {}", colored(GREEN, "{}", key), colored(GREEN, "{}", value));
-    m_device->setGain(SOAPY_SDR_RX, 0, key.c_str(), value);
+  for (const auto& gain : device.gains) {
+    Logger::info(LABEL, "set gain, name: {}, value: {}", colored(GREEN, "{}", gain.name), colored(GREEN, "{}", gain.value));
+    m_device->setGain(SOAPY_SDR_RX, 0, gain.name.c_str(), gain.value);
   }
-  Logger::info(LABEL, "sample rate: {}", formatFrequency(device.m_sampleRate));
-  m_device->setSampleRate(SOAPY_SDR_RX, 0, device.m_sampleRate);
+  Logger::info(LABEL, "sample rate: {}", formatFrequency(device.sample_rate));
+  m_device->setSampleRate(SOAPY_SDR_RX, 0, device.sample_rate);
 }
 
 SdrSource::~SdrSource() {
@@ -67,8 +67,8 @@ bool SdrSource::stop() {
 
 void SdrSource::resetBuffers() {
   std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_configDevice.m_driver == "rtlsdr") {
-    m_device->setSampleRate(SOAPY_SDR_RX, 0, m_configDevice.m_sampleRate);
+  if (m_configDevice.driver == "rtlsdr") {
+    m_device->setSampleRate(SOAPY_SDR_RX, 0, m_configDevice.sample_rate);
   } else {
     m_device->deactivateStream(m_stream);
     m_device->closeStream(m_stream);

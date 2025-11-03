@@ -1,5 +1,6 @@
 #pragma once
 
+#include <file_config.h>
 #include <logger.h>
 #include <radio/help_structures.h>
 
@@ -79,25 +80,8 @@ class Config {
  private:
   Config(const nlohmann::json& json, const ArgConfig& argConfig);
 
+  const std::string m_id;
   const nlohmann::json m_json;
   const ArgConfig& m_argConfig;
-
-  const std::string m_id;
-  const std::vector<Device> m_devices;
-
-  const bool m_isColorLogEnabled;
-  const spdlog::level::level_enum m_consoleLogLevel;
-  const spdlog::level::level_enum m_fileLogLevel;
-
-  const std::vector<FrequencyRange> m_ignoredRanges;
-  const Frequency m_recordingBandwidth;
-  const std::chrono::milliseconds m_recordingMinTime;
-  const std::chrono::milliseconds m_recordingTimeout;
-  const Frequency m_recordingTuningStep;
-  const int m_workers;
-
-  const std::string m_apiKey;
-  const std::string m_latitude;
-  const std::string m_longitude;
-  const int m_altitude;
+  const FileConfig m_fileConfig;
 };

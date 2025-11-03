@@ -1,24 +1,13 @@
 #pragma once
 
 #include <config.h>
+#include <network/query.h>
 #include <network/remote_controller.h>
 #include <radio/sdr_device.h>
 
 #include <list>
 #include <mutex>
 #include <optional>
-
-struct ScheduledTransmission {
-  ScheduledTransmission(
-      const std::string& m_name, const std::chrono::seconds& m_begin, const std::chrono::seconds& m_end, const Frequency& m_frequency, const Frequency& m_bandwidth, const std::string& m_modulation);
-
-  std::string m_name;
-  std::chrono::seconds m_begin;
-  std::chrono::seconds m_end;
-  Frequency m_frequency;
-  Frequency m_bandwidth;
-  std::string m_modulation;
-};
 
 class Scheduler {
  public:

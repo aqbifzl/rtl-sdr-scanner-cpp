@@ -2,17 +2,12 @@
 
 #include <notification.h>
 
-#include <algorithm>
 #include <complex>
-#include <cstdint>
-#include <map>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <utility>
 #include <vector>
 
 using Frequency = int32_t;
-using FrequencyRange = std::pair<Frequency, Frequency>;
 
 struct Recording {
   Recording(const Frequency& shift, const bool& flush);
@@ -22,29 +17,48 @@ struct Recording {
 };
 
 using TransmissionNotification = Notification<std::vector<Recording>>;
+
 using SimpleComplex = std::complex<int8_t>;
 
-struct Satellite {
-  Satellite(const int& id, const std::string& name, const Frequency& frequency, const Frequency& bandwidth, const std::string& modulation);
-  nlohmann::json toJson() const;
+struct FrequencyRange {
+  bool operator==(const FrequencyRange&) const = default;
+  bool operator!=(const FrequencyRange&) const = default;
 
-  const int m_id;
-  const std::string m_name;
-  const Frequency m_frequency;
-  const Frequency m_bandwidth;
-  const std::string m_modulation;
+  Frequency center() const { return (start + stop) / 2; }
+  Frequency bandwidth() const { return stop - start; }
+  bool contains(const Frequency& frequency) const { return start <= frequency && frequency <= stop; }
+
+  Frequency start;
+  Frequency stop;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FrequencyRange, start, stop)
+
+struct Satellite {
+  int id;
+  std::string name;
+  Frequency frequency;
+  Frequency bandwidth;
+  std::string modulation;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Satellite, id, name, frequency, bandwidth, modulation)
+
+struct Gain {
+  std::string name;
+  float value;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Gain, name, value)
 
 struct Device {
-  bool m_enabled{};
-  std::vector<std::pair<std::string, float>> m_gains{};
-  std::string m_serial{};
-  std::string m_driver{};
-  Frequency m_sampleRate{};
-  std::vector<FrequencyRange> m_ranges{};
-  float m_startLevel{};
-  float m_stopLevel{};
-  std::vector<Satellite> m_satellites{};
+  bool enabled{};
+  std::vector<Gain> gains{};
+  std::string serial{};
+  std::string driver{};
+  Frequency sample_rate{};
+  std::vector<FrequencyRange> ranges{};
+  float start_recording_level{};
+  float stop_recording_level{};
+  std::vector<Satellite> satellites{};
 
-  std::string getName() const { return m_driver + "_" + m_serial; }
+  std::string getName() const { return driver + "_" + serial; }
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Device, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites)

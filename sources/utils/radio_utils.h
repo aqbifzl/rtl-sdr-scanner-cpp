@@ -4,6 +4,8 @@
 
 std::string formatFrequency(const Frequency frequency, const char* color = nullptr);
 
+std::string formatFrequencyRange(const FrequencyRange range, const char* color = nullptr);
+
 std::string formatPower(const float power, const char* color = nullptr);
 
 void setNoData(float* data, const int size);

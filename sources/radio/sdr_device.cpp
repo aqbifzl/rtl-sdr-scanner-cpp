@@ -15,7 +15,7 @@
 constexpr auto LABEL = "sdr";
 
 SdrDevice::SdrDevice(const Config& config, const Device& device, Mqtt& mqtt, TransmissionNotification& notification, const int recordersCount)
-    : m_sampleRate(device.m_sampleRate),
+    : m_sampleRate(device.sample_rate),
       m_isInitialized(false),
       m_frequencyRange({0, 0}),
       m_dataController(mqtt, device.getName()),
@@ -27,8 +27,8 @@ SdrDevice::SdrDevice(const Config& config, const Device& device, Mqtt& mqtt, Tra
   Logger::info(
       LABEL,
       "driver: {}, serial: {}, sample rate: {}, recorders: {}",
-      colored(GREEN, "{}", device.m_driver),
-      colored(GREEN, "{}", device.m_serial),
+      colored(GREEN, "{}", device.driver),
+      colored(GREEN, "{}", device.serial),
       formatFrequency(m_sampleRate),
       colored(GREEN, "{}", recordersCount));
 
@@ -64,11 +64,11 @@ void SdrDevice::setFrequencyRange(FrequencyRange frequencyRange) {
   if (m_powerFileSink) m_powerFileSink->stopRecording();
   if (m_rawIqFileSink) m_rawIqFileSink->stopRecording();
 
-  const auto frequency = (frequencyRange.first + frequencyRange.second) / 2;
+  const auto frequency = frequencyRange.center();
   if (m_source->setCenterFrequency(frequency)) {
-    Logger::debug(LABEL, "set frequency range: {} - {}, center frequency: {}", formatFrequency(frequencyRange.first), formatFrequency(frequencyRange.second), formatFrequency(frequency));
+    Logger::debug(LABEL, "set frequency range: {}, center frequency: {}", formatFrequencyRange(frequencyRange), formatFrequency(frequency));
   } else {
-    Logger::warn(LABEL, "set frequency range failed: {} - {}, center frequency: {}", formatFrequency(frequencyRange.first), formatFrequency(frequencyRange.second), formatFrequency(frequency));
+    Logger::warn(LABEL, "set frequency range failed: {}, center frequency: {}", formatFrequencyRange(frequencyRange), formatFrequency(frequency));
   }
 
   m_transmission->resetBuffers();
@@ -143,7 +143,7 @@ void SdrDevice::updateRecordings(const std::vector<Recording> sortedShifts) {
   }
 }
 
-Frequency SdrDevice::getFrequency() const { return (m_frequencyRange.first + m_frequencyRange.second) / 2; }
+Frequency SdrDevice::getFrequency() const { return m_frequencyRange.center(); }
 
 void SdrDevice::setupChains(const Config& config, const Device& device, TransmissionNotification& notification) {
   const auto fftSize = getFft(m_sampleRate, SIGNAL_DETECTION_MAX_STEP);
@@ -152,10 +152,7 @@ void SdrDevice::setupChains(const Config& config, const Device& device, Transmis
   const auto decimatorFactor = std::max(1, static_cast<int>(step / SIGNAL_DETECTION_FPS));
   const auto indexToFrequency = [this, step](const int index) { return getFrequency() + static_cast<Frequency>(step * (index + 0.5)) - m_sampleRate / 2; };
   const auto indexToShift = [this, step](const int index) { return static_cast<Frequency>(step * (index + 0.5)) - m_sampleRate / 2; };
-  const auto isIndexInRange = [this, indexToFrequency](const int index) {
-    const auto f = indexToFrequency(index);
-    return m_frequencyRange.first <= f && f <= m_frequencyRange.second;
-  };
+  const auto isIndexInRange = [this, indexToFrequency](const int index) { return m_frequencyRange.contains(indexToFrequency(index)); };
   Logger::info(LABEL, "signal detection, fft: {}, step: {}, decimator factor: {}", colored(GREEN, "{}", fftSize), formatFrequency(step), colored(GREEN, "{}", decimatorFactor));
 
   const auto s2c = gr::blocks::stream_to_vector::make(sizeof(gr_complex), fftSize * decimatorFactor);

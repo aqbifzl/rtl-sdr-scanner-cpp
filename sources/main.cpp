@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
       std::vector<std::unique_ptr<Scanner>> scanners;
       for (const auto& device : config.devices()) {
         try {
-          if (!device.m_enabled) {
+          if (!device.enabled) {
             Logger::info(LABEL, "device disabled, skipping: {}", colored(GREEN, "{}", device.getName()));
           } else {
             scanners.push_back(std::make_unique<Scanner>(config, device, mqtt, remoteController, config.recordersCount()));

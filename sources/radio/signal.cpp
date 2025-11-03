@@ -15,10 +15,10 @@ Signal::~Signal() {}
 
 void Signal::newData(const Index avgIndex, const float avgPower, const Index, const float, const std::chrono::milliseconds& now) {
   m_power = avgPower;
-  if (m_device.m_stopLevel <= avgPower) {
+  if (m_device.stop_recording_level <= avgPower) {
     m_lastDataTime = now;
   }
-  if (m_device.m_startLevel <= avgPower) {
+  if (m_device.start_recording_level <= avgPower) {
     m_indexes.push_back(avgIndex);
   }
 }

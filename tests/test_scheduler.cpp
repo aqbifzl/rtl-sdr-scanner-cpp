@@ -28,21 +28,21 @@ TEST(Scheduler, Transmissions) {
   {
     const auto result = Scheduler::getTransmissions(100s, scheduledTransmissions);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0].m_frequency, f1);
+    EXPECT_EQ(result[0].frequency, f1);
     EXPECT_EQ(scheduledTransmissions.size(), 3);
   }
   {
     const auto result = Scheduler::getTransmissions(150s, scheduledTransmissions);
     EXPECT_EQ(result.size(), 2);
-    EXPECT_EQ(result[0].m_frequency, f1);
-    EXPECT_EQ(result[1].m_frequency, f2);
+    EXPECT_EQ(result[0].frequency, f1);
+    EXPECT_EQ(result[1].frequency, f2);
     EXPECT_EQ(scheduledTransmissions.size(), 3);
   }
   {
     const auto result = Scheduler::getTransmissions(200s, scheduledTransmissions);
     EXPECT_EQ(result.size(), 2);
-    EXPECT_EQ(result[0].m_frequency, f1);
-    EXPECT_EQ(result[1].m_frequency, f2);
+    EXPECT_EQ(result[0].frequency, f1);
+    EXPECT_EQ(result[1].frequency, f2);
     EXPECT_EQ(scheduledTransmissions.size(), 3);
   }
   {
@@ -53,7 +53,7 @@ TEST(Scheduler, Transmissions) {
   {
     const auto result = Scheduler::getTransmissions(250s, scheduledTransmissions);
     EXPECT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0].m_frequency, f3);
+    EXPECT_EQ(result[0].frequency, f3);
     EXPECT_EQ(scheduledTransmissions.size(), 1);
   }
   {

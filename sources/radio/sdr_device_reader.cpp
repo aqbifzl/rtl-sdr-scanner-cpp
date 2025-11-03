@@ -128,47 +128,6 @@ void SdrDeviceReader::scanSoapyDevices(nlohmann::json& json) {
   }
 }
 
-Device SdrDeviceReader::readDevice(const nlohmann::json& json) {
-  Device device;
-  device.m_driver = json.at("driver").get<std::string>();
-  device.m_enabled = json.at("enabled").get<bool>();
-  device.m_startLevel = json.at("start_recording_level").get<float>();
-  device.m_stopLevel = json.at("stop_recording_level").get<float>();
-  for (const auto& item : json.at("gains")) {
-    const auto key = item.at("name").get<std::string>();
-    const auto value = item.at("value").get<float>();
-    device.m_gains.emplace_back(key, value);
-  }
-  device.m_serial = json.at("serial").get<std::string>();
-  device.m_sampleRate = json.at("sample_rate").get<Frequency>();
-  for (const auto& item : json.at("ranges")) {
-    const auto start = item.at("start").get<Frequency>();
-    const auto stop = item.at("stop").get<Frequency>();
-    device.m_ranges.emplace_back(start, stop);
-  }
-  for (const auto& item : json.at("satellites")) {
-    const auto id = item.at("id").get<int>();
-    const auto name = item.at("name").get<std::string>();
-    const auto frequency = item.at("frequency").get<Frequency>();
-    const auto bandwidth = item.at("bandwidth").get<Frequency>();
-    const auto modulation = item.at("modulation").get<std::string>();
-    device.m_satellites.emplace_back(id, name, frequency, bandwidth, modulation);
-  }
-  return device;
-}
-
-std::vector<Device> SdrDeviceReader::readDevices(const nlohmann::json& json) {
-  std::vector<Device> devices;
-  for (const auto& device : json.at("devices")) {
-    try {
-      devices.push_back(SdrDeviceReader::readDevice(device));
-    } catch (const std::exception& exception) {
-      Logger::warn(LABEL, "read device exception: {}", exception.what());
-    }
-  }
-  return devices;
-}
-
 void SdrDeviceReader::clearDevices(nlohmann::json& json) {
   for (auto& device : json.at("devices")) {
     device.erase("driver");

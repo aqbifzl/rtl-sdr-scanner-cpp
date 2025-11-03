@@ -88,7 +88,7 @@ void Transmission::clearSignals(const float*, const float*, const std::chrono::m
 void Transmission::addSignals(const float* avgPower, const float* rawPower, const std::chrono::milliseconds now) {
   std::vector<Index> indexes;
   for (int i = 0; i < m_itemSize; ++i) {
-    if (m_device.m_startLevel <= avgPower[i] && m_isIndexInRange(i) && !isIndexIgnored(i)) {
+    if (m_device.start_recording_level <= avgPower[i] && m_isIndexInRange(i) && !isIndexIgnored(i)) {
       indexes.push_back(i);
     }
   }
@@ -136,7 +136,7 @@ Transmission::Index Transmission::getBestIndex(Index index) const {
   for (size_t i = min; i < max; ++i) {
     const auto& row = m_averager.data().at(i);
     const auto bestIndex = getMaxIndex(row.data(), row.size(), index, m_groupSize);
-    if (m_device.m_startLevel <= row[bestIndex]) {
+    if (m_device.start_recording_level <= row[bestIndex]) {
       const int timestamp = max - i - 1;
       Logger::debug(
           LABEL,
@@ -156,7 +156,7 @@ Transmission::Index Transmission::getBestIndex(Index index) const {
 bool Transmission::isIndexIgnored(const Index& index) const {
   const auto frequency = m_indexToFrequency(index);
   for (const auto& range : m_config.ignoredRanges()) {
-    if (range.first <= frequency && frequency <= range.second) {
+    if (range.contains(frequency)) {
       return true;
     }
   }
