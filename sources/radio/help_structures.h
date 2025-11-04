@@ -52,6 +52,7 @@ struct Gain {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Gain, name, value, min, max, step)
 
 struct Device {
+  bool connected = false;
   bool enabled{};
   std::vector<Gain> gains{};
   std::string serial{};
@@ -65,4 +66,4 @@ struct Device {
 
   std::string getName() const { return driver + "_" + serial; }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Device, connected, enabled, gains, serial, driver, sample_rate, ranges, start_recording_level, stop_recording_level, satellites, sample_rates)

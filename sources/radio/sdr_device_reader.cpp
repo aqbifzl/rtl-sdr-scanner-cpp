@@ -43,6 +43,7 @@ void SdrDeviceReader::updateDevice(Device& device, const SoapySDR::Kwargs args) 
     throw std::runtime_error("open device failed");
   }
 
+  device.connected = true;
   device.driver = driver;
   device.sample_rates = getSampleRates(sdr);
   device.gains = getGains(sdr);
@@ -61,6 +62,7 @@ Device SdrDeviceReader::createDevice(const SoapySDR::Kwargs args) {
   }
 
   Device device;
+  device.connected = true;
   device.driver = driver;
   device.serial = serial;
   device.enabled = true;
@@ -112,6 +114,7 @@ void SdrDeviceReader::updateDevices(std::vector<Device>& devices) {
 
 void SdrDeviceReader::clearDevices(nlohmann::json& json) {
   for (auto& device : json.at("devices")) {
+    device.erase("connected");
     device.erase("driver");
     device.erase("sample_rates");
 
