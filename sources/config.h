@@ -1,5 +1,6 @@
 #pragma once
 
+#include <arg_config.h>
 #include <file_config.h>
 #include <logger.h>
 #include <radio/help_structures.h>
@@ -34,17 +35,6 @@ constexpr auto SIGNAL_DETECTION_MAX_STEP = 250;    // max step after fft
 constexpr auto SPECTROGRAM_PREFERRED_MAX_STEP = 1000;                        // spectrogram preferred max step
 constexpr auto SPECTROGRAM_MAX_FFT = 16384;                                  // spectrogram fft limit
 constexpr auto SPECTROGRAM_SEND_INTERVAL = std::chrono::milliseconds(1000);  // send spectrogram data interval
-
-struct ArgConfig {
-  std::string configFile;
-  std::string id;
-  std::string logFileName = "sdr_scanner.log";  // default log filename
-  int logFileCount = 9;                         // default keep last n log files
-  int logFileSize = 10 * 1024 * 1024;           // default single log file max size
-  std::string mqttUrl;
-  std::string mqttUser;
-  std::string mqttPassword;
-};
 
 class Config {
  public:

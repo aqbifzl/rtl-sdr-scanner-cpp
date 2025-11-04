@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   argv = app.ensure_utf8(argv);
 
   ArgConfig argConfig;
-  app.add_option("--config", argConfig.configFile, "config file")->required()->check(CLI::ExistingFile);
+  app.add_option("--config", argConfig.configFile, "config file")->required();
   app.add_option("--id", argConfig.id);
   app.add_option("--log-file", argConfig.logFileName, "log file");
   app.add_option("--log-file-count", argConfig.logFileCount, "log file count")->check(CLI::PositiveNumber);

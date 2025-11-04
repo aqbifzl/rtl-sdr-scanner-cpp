@@ -55,7 +55,6 @@ CMD ["/usr/bin/auto_sdr_test"]
 FROM run
 RUN mkdir -p /app && \
     mkdir -p /config
-COPY config.example.json /config/
 COPY --from=build /usr/local/lib/libsdrplay_api.so* /usr/local/lib/
 COPY --from=build /usr/local/bin/sdrplay_apiService /usr/local/bin/
 COPY --from=build /usr/local/lib/SoapySDR/modules0.8/libsdrPlaySupport.so /usr/local/lib/SoapySDR/modules0.8/

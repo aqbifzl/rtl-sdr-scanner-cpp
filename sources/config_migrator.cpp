@@ -36,14 +36,4 @@ void ConfigMigrator::applyVersion(nlohmann::json& config, const int version) {
   config["version"] = version;
 }
 
-void ConfigMigrator::applyVersion2(nlohmann::json& config) {
-  applyVersion(config, 2);
-  config["api_key"] = "";
-  config["position"]["latitude"] = "0.000000";
-  config["position"]["longitude"] = "0.000000";
-  config["position"]["altitude"] = 0;
-
-  for (auto& device : config.at("devices")) {
-    device["satellites"] = nlohmann::json::array();
-  }
-}
+void ConfigMigrator::applyVersion2(nlohmann::json& config) { std::ignore = config; }

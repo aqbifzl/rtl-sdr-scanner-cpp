@@ -38,10 +38,18 @@ Config Config::loadFromFile(const std::string& path, const ArgConfig& argConfig)
       SdrDeviceReader::updateDevices(fileConfig.devices);
       return Config(argConfig, fileConfig);
     } catch (const nlohmann::json::parse_error& exception) {
-      throw std::runtime_error(fmt::format("can not parse config file, invalid json format: {}", path));
+      Logger::info(LABEL, "config parse error, creating default");
+      FileConfig fileConfig;
+      SdrDeviceReader::updateDevices(fileConfig.devices);
+      Config::saveToFile(path, static_cast<nlohmann::json>(fileConfig));
+      return Config(argConfig, fileConfig);
     }
   } else {
-    throw std::runtime_error(fmt::format("can not parse config file, file not found: {}", path));
+    Logger::info(LABEL, "config not found, creating default");
+    FileConfig fileConfig;
+    SdrDeviceReader::updateDevices(fileConfig.devices);
+    Config::saveToFile(path, static_cast<nlohmann::json>(fileConfig));
+    return Config(argConfig, fileConfig);
   }
 }
 
