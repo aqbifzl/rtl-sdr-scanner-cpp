@@ -49,8 +49,9 @@ struct Gain {
   double min;
   double max;
   double step;
+  std::vector<double> options;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Gain, name, value, min, max, step)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Gain, name, value, min, max, step, options)
 
 struct Crontab {
   std::string name;
