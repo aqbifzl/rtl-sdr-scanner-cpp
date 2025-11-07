@@ -6,7 +6,7 @@
 
 #include <regex>
 
-constexpr auto LABEL = "config";
+constexpr auto LABEL = "file_config";
 
 FileConfig FileConfig::fromJson(nlohmann::json json) {
   ConfigMigrator::update(json);

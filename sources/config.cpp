@@ -8,8 +8,6 @@
 #include <fstream>
 #include <regex>
 
-constexpr auto LABEL = "config";
-
 spdlog::level::level_enum parseLogLevel(const std::string& level) {
   if (level == "trace")
     return spdlog::level::level_enum::trace;

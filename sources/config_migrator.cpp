@@ -3,7 +3,7 @@
 #include <logger.h>
 #include <radio/help_structures.h>
 
-constexpr auto LABEL = "config";
+constexpr auto LABEL = "migrator";
 
 void ConfigMigrator::update(nlohmann::json& config) {
   const auto version = config.contains("version") ? config.at("version").get<int>() : 0;

@@ -4,7 +4,7 @@
 #include <logger.h>
 #include <utils/utils.h>
 
-constexpr auto LABEL = "config";
+constexpr auto LABEL = "sdr_reader";
 
 std::vector<Frequency> getSampleRates(SoapySDR::Device* sdr) {
   std::vector<Frequency> sampleRates;
