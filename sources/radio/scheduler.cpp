@@ -7,13 +7,20 @@
 
 constexpr auto LABEL = "scheduler";
 constexpr auto LOOP_TIMEOUT = std::chrono::milliseconds(100);
+constexpr auto UPDATE_INITIAL_DELAY = std::chrono::seconds(10);
 constexpr auto UPDATE_INTERVAL = std::chrono::minutes(60);
 constexpr auto SHIFT_FREQUENCY = Frequency(100000);
 
 using namespace std::placeholders;
 
 Scheduler::Scheduler(const Config& config, const Device& device, RemoteController& remoteController)
-    : m_config(config), m_device(device), m_remoteController(remoteController), m_lastUpdateTime(0), m_isRefreshEnabled(true), m_isRunning(true), m_thread([this]() { worker(); }) {}
+    : m_config(config),
+      m_device(device),
+      m_remoteController(remoteController),
+      m_lastUpdateTime(getTime() - UPDATE_INTERVAL + UPDATE_INITIAL_DELAY),
+      m_isRefreshEnabled(true),
+      m_isRunning(true),
+      m_thread([this]() { worker(); }) {}
 
 Scheduler::~Scheduler() {
   m_isRunning = false;
