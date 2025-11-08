@@ -55,7 +55,6 @@ std::string Config::mqttUrl() const { return m_argConfig.mqttUrl; }
 std::string Config::mqttUsername() const { return m_argConfig.mqttUser; }
 std::string Config::mqttPassword() const { return m_argConfig.mqttPassword; }
 
-std::string Config::apiKey() const { return m_fileConfig.api_key; }
 std::string Config::latitude() const { return m_fileConfig.position.latitude; }
 std::string Config::longitude() const { return m_fileConfig.position.longitude; }
 int Config::altitude() const { return m_fileConfig.position.altitude; }

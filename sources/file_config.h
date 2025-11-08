@@ -35,7 +35,6 @@ struct RecordingConfig {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RecordingConfig, min_sample_rate, min_time_ms, max_noise_time_ms, step)
 
 struct FileConfig {
-  std::string api_key;
   std::vector<Device> devices;
   std::vector<IgnoredFrequency> ignored_frequencies;
   OutputConfig output;
@@ -48,4 +47,4 @@ struct FileConfig {
   static nlohmann::json toSave(nlohmann::json json);
   static nlohmann::json toPrint(nlohmann::json json);
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FileConfig, api_key, devices, ignored_frequencies, output, position, recording, version, workers)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FileConfig, devices, ignored_frequencies, output, position, recording, version, workers)

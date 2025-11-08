@@ -78,7 +78,7 @@ void Scheduler::worker() {
 
 void Scheduler::query() {
   Logger::info(LABEL, "send query");
-  const SchedulerQuery query(m_config.latitude(), m_config.longitude(), m_config.altitude(), m_config.apiKey(), m_device.satellites, m_device.crontabs);
+  const SchedulerQuery query(m_config.latitude(), m_config.longitude(), m_config.altitude(), m_device.satellites, m_device.crontabs);
   m_remoteController.schedulerQuery(m_device.getName(), static_cast<nlohmann::json>(query).dump());
 }
 

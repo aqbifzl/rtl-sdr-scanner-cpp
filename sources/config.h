@@ -59,7 +59,6 @@ class Config {
   std::string mqttUsername() const;
   std::string mqttPassword() const;
 
-  std::string apiKey() const;
   std::string latitude() const;
   std::string longitude() const;
   int altitude() const;

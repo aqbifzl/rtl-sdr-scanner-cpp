@@ -7,11 +7,10 @@ struct SchedulerQuery {
   std::string latitude;
   std::string longitude;
   int altitude;
-  std::string api_key;
   std::vector<Satellite> satellites;
   std::vector<Crontab> crontabs;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SchedulerQuery, latitude, longitude, altitude, api_key, satellites, crontabs)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SchedulerQuery, latitude, longitude, altitude, satellites, crontabs)
 
 struct ScheduledTransmission {
   std::string name;

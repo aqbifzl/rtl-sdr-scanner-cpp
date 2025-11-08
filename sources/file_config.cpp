@@ -23,9 +23,6 @@ nlohmann::json FileConfig::toSave(nlohmann::json json) {
 
 nlohmann::json FileConfig::toPrint(nlohmann::json json) {
   try {
-    if (!json["api_key"].empty()) {
-      json["api_key"] = "******";
-    }
     std::regex regex(R"(^(\d+)\.\d+)");
     json["position"]["latitude"] = std::regex_replace(json["position"]["latitude"].get<std::string>(), regex, "$1.********");
     json["position"]["longitude"] = std::regex_replace(json["position"]["longitude"].get<std::string>(), regex, "$1.********");
