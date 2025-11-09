@@ -117,15 +117,15 @@ void SdrDeviceReader::updateDevices(std::vector<Device>& devices) {
   const SoapySDR::KwargsList results = SoapySDR::Device::enumerate("remote=");
   Logger::info(LABEL, "found {} devices:", colored(GREEN, "{}", results.size()));
 
-  for (uint32_t i = 0; i < results.size(); ++i) {
+  for (const auto& args : results) {
     try {
-      const auto serial = results[i].at("serial");
+      const auto serial = args.at("serial");
       const auto f = [serial](const Device& device) { return device.serial == serial; };
       const auto it = std::find_if(devices.begin(), devices.end(), f);
       if (it != devices.end()) {
-        updateDevice(*it, results[i]);
+        updateDevice(*it, args);
       } else {
-        devices.push_back(createDevice(results[i]));
+        devices.push_back(createDevice(args));
       }
     } catch (const std::exception& exception) {
       Logger::exception(LABEL, exception, SPDLOG_LOC, "update device failed");
