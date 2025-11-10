@@ -7,9 +7,9 @@ constexpr auto LABEL = "scanner";
 constexpr auto LOOP_TIMEOUT = std::chrono::milliseconds(10);
 
 Scanner::Scanner(const Config& config, const Device& device, RemoteController& remoteController)
-    : m_device(config, device, remoteController, m_notification),
+    : m_ranges(splitRanges(device.ranges, getRangeSplitSampleRate(device.sample_rate))),
+      m_device(config, device, remoteController, m_notification, m_ranges),
       m_scheduler(config, device, remoteController),
-      m_ranges(splitRanges(device.ranges, getRangeSplitSampleRate(device.sample_rate))),
       m_isRunning(true),
       m_thread([this]() { worker(); }) {
   Logger::info(LABEL, "starting");

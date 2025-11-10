@@ -10,10 +10,16 @@
 
 class SdrProcessor {
  public:
-  SdrProcessor(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification, const std::string& zeromq, const FrequencyRange& frequencyRange);
+  SdrProcessor(
+      const Config& config,
+      const Device& device,
+      RemoteController& remoteController,
+      TransmissionNotification& notification,
+      std::shared_ptr<gr::block> source,
+      Connector& connector,
+      const FrequencyRange& frequencyRange);
   ~SdrProcessor();
 
  private:
-  std::shared_ptr<gr::top_block> m_tb;
-  Connector m_connector;
+  Connector& m_connector;
 };

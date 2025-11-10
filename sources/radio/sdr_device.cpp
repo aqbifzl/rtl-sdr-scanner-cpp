@@ -2,6 +2,8 @@
 
 #include <config.h>
 #include <gnuradio/block_detail.h>
+#include <gnuradio/blocks/copy.h>
+#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/soapy/source.h>
 #include <gnuradio/zeromq/pub_sink.h>
 #include <logger.h>
@@ -16,7 +18,7 @@
 
 constexpr auto LABEL = "sdr";
 
-SdrDevice::SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification)
+SdrDevice::SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification, const std::vector<FrequencyRange>& ranges)
     : m_config(config),
       m_device(device),
       m_zeromq(fmt::format("ipc://{}/{}_{}_zeromq_stream.sock", std::filesystem::canonical(m_config.workDir()).string(), device.driver, device.serial)),
@@ -24,13 +26,26 @@ SdrDevice::SdrDevice(const Config& config, const Device& device, RemoteControlle
       m_notification(notification),
       m_isInitialized(false),
       m_tb(gr::make_top_block("device")),
-      m_connector(m_tb),
-      m_source(std::make_shared<SdrSource>(device)) {
+      m_source(std::make_shared<SdrSource>(device)),
+      m_selector(gr::blocks::selector::make(sizeof(gr_complex), 0, 0)),
+      m_connector(m_tb) {
   Logger::info(LABEL, "starting");
   Logger::info(LABEL, "driver: {}, serial: {}, sample rate: {}", colored(GREEN, "{}", device.driver), colored(GREEN, "{}", device.serial), formatFrequency(device.sample_rate));
   Logger::info(LABEL, "zeromq: {}", colored(GREEN, "{}", m_zeromq));
 
   m_connector.connect<Block>(m_source, gr::zeromq::pub_sink::make(sizeof(gr_complex), 1, const_cast<char*>(m_zeromq.c_str())));
+  m_connector.connect<Block>(m_source, m_selector, gr::blocks::null_sink::make(sizeof(gr_complex)));
+
+  int index = 1;
+  for (const auto& range : ranges) {
+    Logger::info(LABEL, "creating processor, index: {}, range: {}", index, formatFrequencyRange(range, GREEN));
+    auto forward = gr::blocks::copy::make(sizeof(gr_complex));
+    auto processor = std::make_unique<SdrProcessor>(m_config, m_device, m_remoteController, m_notification, forward, m_connector, range);
+    m_connector.connect(m_selector, forward, index, 0);
+    m_processors.push_back(std::move(processor));
+    m_processorIndex[range.center()] = index++;
+  }
+
   m_tb->start();
   Logger::info(LABEL, "started");
 }
@@ -50,14 +65,18 @@ void SdrDevice::setFrequencyRange(FrequencyRange frequencyRange) {
     m_isInitialized = true;
   }
 
-  m_processor.reset();
+  m_selector->set_output_index(0);
   const auto frequency = frequencyRange.center();
   if (m_source->setCenterFrequency(frequency)) {
     Logger::debug(LABEL, "set frequency range: {}, center frequency: {}", formatFrequencyRange(frequencyRange), formatFrequency(frequency));
   } else {
     Logger::warn(LABEL, "set frequency range failed: {}, center frequency: {}", formatFrequencyRange(frequencyRange), formatFrequency(frequency));
   }
-  m_processor = std::make_unique<SdrProcessor>(m_config, m_device, m_remoteController, m_notification, m_zeromq, frequencyRange);
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  auto it = m_processorIndex.find(frequencyRange.center());
+  if (it != m_processorIndex.end()) {
+    m_selector->set_output_index(it->second);
+  }
 }
 
 void SdrDevice::updateRecordings(const std::vector<Recording> recordings) {

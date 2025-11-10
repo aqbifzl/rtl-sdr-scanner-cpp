@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gnuradio/blocks/selector.h>
 #include <gnuradio/top_block.h>
 #include <network/remote_controller.h>
 #include <notification.h>
@@ -14,7 +15,7 @@
 
 class SdrDevice {
  public:
-  SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification);
+  SdrDevice(const Config& config, const Device& device, RemoteController& remoteController, TransmissionNotification& notification, const std::vector<FrequencyRange>& ranges);
   ~SdrDevice();
 
   void setFrequencyRange(FrequencyRange frequencyRange);
@@ -29,9 +30,11 @@ class SdrDevice {
   bool m_isInitialized;
 
   std::shared_ptr<gr::top_block> m_tb;
-  Connector m_connector;
   std::shared_ptr<SdrSource> m_source;
-  std::unique_ptr<SdrProcessor> m_processor;
+  std::shared_ptr<gr::blocks::selector> m_selector;
+  Connector m_connector;
+  std::vector<std::unique_ptr<SdrProcessor>> m_processors;
+  std::map<Frequency, int> m_processorIndex;
   std::vector<std::unique_ptr<Recorder>> m_recorders;
   std::set<Frequency> ignoredTransmissions;
 };
