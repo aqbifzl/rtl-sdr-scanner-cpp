@@ -13,4 +13,6 @@ struct ArgConfig {
   std::string mqttPassword;
   std::string workDir = ".";
   bool enumerateRemote = false;
+  bool dumpSource = false;
+  bool dumpRecording = false;
 };

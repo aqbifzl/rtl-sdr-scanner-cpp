@@ -18,7 +18,7 @@ class Recorder {
   Recorder(const Recorder&) = delete;
   Recorder& operator=(const Recorder&) = delete;
 
-  Recorder(const Config& config, const std::string& zeromq, Frequency sampleRate, const Recording& recording, std::function<void(const nlohmann::json&)> send);
+  Recorder(const Config& config, const Device& device, const std::string& zeromq, Frequency sampleRate, const Recording& recording, std::function<void(const nlohmann::json&)> send);
   ~Recorder();
 
   Recording getRecording() const;

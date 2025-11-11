@@ -10,7 +10,7 @@ std::string formatPower(const float power, const char* color = nullptr);
 
 void setNoData(float* data, const int size);
 
-std::string getRawFileName(const char* label, const char* extension, Frequency frequency, Frequency sampleRate);
+std::string getRawFileName(const std::string& dir, const Device& device, const char* label, const char* extension, Frequency frequency, Frequency sampleRate);
 
 Frequency getTunedFrequency(Frequency frequency, Frequency step);
 

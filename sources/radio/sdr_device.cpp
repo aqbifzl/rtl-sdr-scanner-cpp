@@ -3,6 +3,7 @@
 #include <config.h>
 #include <gnuradio/block_detail.h>
 #include <gnuradio/blocks/copy.h>
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/soapy/source.h>
 #include <gnuradio/zeromq/pub_sink.h>
@@ -44,6 +45,11 @@ SdrDevice::SdrDevice(const Config& config, const Device& device, RemoteControlle
     m_connector.connect(m_selector, forward, index, 0);
     m_processors.push_back(std::move(processor));
     m_processorIndex[range.center()] = index++;
+  }
+
+  if (config.dumpSource()) {
+    const auto fileName = getRawFileName(config.workDir(), device, "source-all", "fc", ranges.front().center(), device.sample_rate);
+    m_connector.connect<Block>(m_source, gr::blocks::file_sink::make(sizeof(gr_complex), fileName.c_str()));
   }
 
   m_tb->start();
@@ -110,7 +116,7 @@ void SdrDevice::updateRecordings(const std::vector<Recording> recordings) {
       if (m_recorders.size() < static_cast<size_t>(m_config.recordersCount())) {
         const auto sampleRate = m_device.sample_rate;
         m_recorders.push_back(
-            std::make_unique<Recorder>(m_config, m_zeromq, sampleRate, recording, std::bind(&RemoteController::sendTransmission, m_remoteController, m_device, std::placeholders::_1)));
+            std::make_unique<Recorder>(m_config, m_device, m_zeromq, sampleRate, recording, std::bind(&RemoteController::sendTransmission, m_remoteController, m_device, std::placeholders::_1)));
       } else {
         if (!ignoredTransmissions.count(recording.recordingFrequency)) {
           Logger::info(LABEL, "maximum recorders limit reached, frequency: {}", formatFrequency(recording.recordingFrequency, RED));

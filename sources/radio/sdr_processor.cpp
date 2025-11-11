@@ -52,13 +52,8 @@ SdrProcessor::SdrProcessor(
   const auto spectrogram = std::make_shared<Spectrogram>(fftSize, sampleRate, getFrequency, sendSpectrogram);
   m_connector.connect<Block>(psd, spectrogram);
 
-  if (DEBUG_SAVE_FULL_POWER) {
-    const auto fileName = getRawFileName("full", "power", frequencyRange.center(), device.sample_rate);
-    m_connector.connect<Block>(psd, gr::blocks::file_sink::make(sizeof(float) * fftSize, fileName.c_str()));
-  }
-
-  if (DEBUG_SAVE_FULL_RAW_IQ) {
-    const auto fileName = getRawFileName("full", "fc", frequencyRange.center(), device.sample_rate);
+  if (config.dumpSource()) {
+    const auto fileName = getRawFileName(config.workDir(), device, "source", "fc", frequencyRange.center(), device.sample_rate);
     m_connector.connect<Block>(source, gr::blocks::file_sink::make(sizeof(gr_complex), fileName.c_str()));
   }
 }

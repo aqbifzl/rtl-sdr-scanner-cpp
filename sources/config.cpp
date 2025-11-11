@@ -60,3 +60,6 @@ std::string Config::longitude() const { return m_fileConfig.position.longitude; 
 int Config::altitude() const { return m_fileConfig.position.altitude; }
 
 std::string Config::workDir() const { return m_argConfig.workDir; }
+
+bool Config::dumpSource() const { return m_argConfig.dumpSource; }
+bool Config::dumpRecording() const { return m_argConfig.dumpRecording; }

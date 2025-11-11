@@ -3,6 +3,7 @@
 #include <logger.h>
 #include <utils/utils.h>
 
+#include <filesystem>
 #include <numeric>
 
 namespace {
@@ -77,12 +78,25 @@ void setNoData(float* data, const int size) {
   }
 }
 
-std::string getRawFileName(const char* label, const char* extension, Frequency frequency, Frequency sampleRate) {
-  char buf[1024];
+std::string getRawFileName(const std::string& dir, const Device& device, const char* label, const char* extension, Frequency frequency, Frequency sampleRate) {
+  const auto path = std::filesystem::canonical(dir.c_str());
   time_t rawtime = time(nullptr);
   struct tm* tm = localtime(&rawtime);
-  snprintf(buf, 1024, "./%s_%04d%02d%02d_%02d%02d%02d_%d_%d_%s.raw", label, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, frequency, sampleRate, extension);
-  return buf;
+  return fmt::format(
+      "{}/{}-{}-{}_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}_{}_{}_{}.raw",
+      path.c_str(),
+      device.driver,
+      device.serial,
+      label,
+      tm->tm_year + 1900,
+      tm->tm_mon + 1,
+      tm->tm_mday,
+      tm->tm_hour,
+      tm->tm_min,
+      tm->tm_sec,
+      frequency,
+      sampleRate,
+      extension);
 }
 
 Frequency getTunedFrequency(Frequency frequency, Frequency step) {

@@ -13,7 +13,7 @@
 
 constexpr auto LABEL = "recorder";
 
-Recorder::Recorder(const Config& config, const std::string& zeromq, Frequency sampleRate, const Recording& recording, std::function<void(const nlohmann::json&)> send)
+Recorder::Recorder(const Config& config, const Device& device, const std::string& zeromq, Frequency sampleRate, const Recording& recording, std::function<void(const nlohmann::json&)> send)
     : m_config(config), m_sampleRate(sampleRate), m_recording(recording), m_send(send), m_tb(gr::make_top_block("recorder")), m_connector(m_tb) {
   Logger::info(
       LABEL,
@@ -44,8 +44,8 @@ Recorder::Recorder(const Config& config, const std::string& zeromq, Frequency sa
   blocks.push_back(m_buffer);
   m_connector.connect(blocks);
 
-  if (DEBUG_SAVE_RECORDING_RAW_IQ) {
-    const auto fileName = getRawFileName("recording", "fc", m_recording.recordingFrequency, m_recording.bandwidth);
+  if (config.dumpRecording()) {
+    const auto fileName = getRawFileName(config.workDir(), device, "recording", "fc", m_recording.recordingFrequency, m_recording.bandwidth);
     m_connector.connect<Block>(lastResampler, gr::blocks::file_sink::make(sizeof(gr_complex), fileName.c_str()));
   }
 
