@@ -45,6 +45,7 @@ add_library(auto_sdr_libs STATIC ${SOURCES})
 add_executable(auto_sdr "sources/main.cpp")
 target_link_libraries(auto_sdr
     auto_sdr_libs
+    gnuradio::gnuradio-analog
     gnuradio::gnuradio-blocks
     gnuradio::gnuradio-fft
     gnuradio::gnuradio-filter
@@ -60,6 +61,7 @@ add_executable(auto_sdr_test ${TEST_SOURCES} "tests/test_main.cpp")
 target_link_libraries(auto_sdr_test 
     gtest
     auto_sdr_libs
+    gnuradio::gnuradio-analog
     gnuradio::gnuradio-blocks
     gnuradio::gnuradio-fft
     gnuradio::gnuradio-filter

@@ -13,7 +13,6 @@
 constexpr auto INITIAL_DELAY = std::chrono::milliseconds(1000);           // delay after first start sdr device to start processing
 constexpr auto PERFORMANCE_LOGGER_INTERVAL = 1000;                        // print stats every n frames
 constexpr auto RECORDER_FLUSH_INTERVAL = std::chrono::milliseconds(100);  // flush recordings to mqtt every 2 * n bytes
-constexpr auto RESAMPLER_THRESHOLD = 125;                                 // max interpolation or decimation factor of RESAMPLER
 constexpr auto TRANSMISSION_MAX_TIME = std::chrono::minutes(10);          // break transmission if longer that
 
 // SCANNING SETTINGS
@@ -32,6 +31,9 @@ constexpr auto SIGNAL_DETECTION_MAX_STEP = 250;    // max step after fft
 constexpr auto SPECTROGRAM_PREFERRED_MAX_STEP = 1000;                        // spectrogram preferred max step
 constexpr auto SPECTROGRAM_MAX_FFT = 16384;                                  // spectrogram fft limit
 constexpr auto SPECTROGRAM_SEND_INTERVAL = std::chrono::milliseconds(1000);  // send spectrogram data interval
+
+// RECORDER SETTINGS
+constexpr auto RECORDER_SAMPLE_RATE_DECIMATOR = 2000000;
 
 // SOURCE AND RECORDING NAMES
 constexpr auto GAIN_TESTER_SOURCE_NAME = "gain tester";

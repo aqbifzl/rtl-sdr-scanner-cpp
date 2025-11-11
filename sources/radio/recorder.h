@@ -32,7 +32,6 @@ class Recorder {
   const std::function<void(const nlohmann::json&)> m_send;
 
   std::shared_ptr<gr::top_block> m_tb;
-  std::shared_ptr<gr::blocks::rotator_cc> m_shiftBlock;
   std::shared_ptr<Buffer<SimpleComplex>> m_buffer;
   Connector m_connector;
   std::chrono::milliseconds m_firstDataTime;
