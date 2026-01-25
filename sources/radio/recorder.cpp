@@ -23,18 +23,12 @@ constexpr auto LABEL = "recorder";
 // https://github.com/gqrx-sdr/gqrx/blob/master/src/applications/gqrx/receiver.cpp
 
 Block buildDecimator(Frequency sampleRate, Frequency shift, int decim) {
-  if (1 < decim) {
-    const auto filter = gr::filter::freq_xlating_fir_filter_ccf::make(decim, {1}, 0.0, sampleRate);
-    const auto outRate = sampleRate / decim;
-    const auto lpf_cutoff = 120e3;
-    filter->set_center_freq(shift);
-    filter->set_taps(gr::filter::firdes::low_pass(1.0, sampleRate, lpf_cutoff, outRate - 2 * lpf_cutoff, gr::fft::window::WIN_BLACKMAN_HARRIS));
-    return filter;
-  } else {
-    auto shiftBlock = gr::blocks::rotator_cc::make();
-    shiftBlock->set_phase_inc(2.0l * M_PIl * (static_cast<double>(shift) / static_cast<float>(sampleRate)));
-    return shiftBlock;
-  }
+  const auto filter = gr::filter::freq_xlating_fir_filter_ccf::make(decim, {1}, 0.0, sampleRate);
+  const auto outRate = sampleRate / decim;
+  const auto lpf_cutoff = 120e3;
+  filter->set_center_freq(shift);
+  filter->set_taps(gr::filter::firdes::low_pass(1.0, sampleRate, lpf_cutoff, outRate - 2 * lpf_cutoff, gr::fft::window::WIN_BLACKMAN_HARRIS));
+  return filter;
 }
 
 Block buildResampler(Frequency inputRate, Frequency outputRate) {
